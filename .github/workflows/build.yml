@@ -1,10 +1,12 @@
 name: Build
+
 on:
   workflow_dispatch:
-      inputs:
-        package_name:
-          description: "Package name of the game:"
-          required: true
+    inputs:
+      package_name:
+        description: 'Package name of the game'
+        required: true
+        default: 'com.modx.daluandou'
 
 jobs:
   build:
@@ -18,10 +20,12 @@ jobs:
         cache: gradle
     - run: |
         chmod +x ./gradlew
-        sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
+        # 替换module.gradle中的模块描述
+        sed -i 's/moduleDescription = "/"moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
+        # 替换game.h中的包名
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         ./gradlew :module:assembleRelease
     - uses: actions/upload-artifact@v3
       with:
-        name: zygisk-il2cppdumper
+        name: ${{ github.event.inputs.package_name }}-zygisk-il2cppdumper
         path: out/magisk_module_release/
